@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Confirm Delete</h1>
+<p>Are you sure you want to delete the report for {{ object.patient.name }} on {{ object.date }}?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'report_list' %}">Cancel</a>
+</form>
+{% endblock %}

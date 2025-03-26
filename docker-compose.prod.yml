@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: patient_report_db
+      POSTGRES_USER: patient_report_user
+      POSTGRES_PASSWORD: 123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind unix:/tmp/gunicorn.sock patient_report_system.wsgi"
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://patient_report_user:123@db:5432/patient_report_db
+      - AI_SERVICE_URL=http://ai_service:11434  # Adjust based on your setup
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+      - static:/static
+      - media:/media
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  static:
+  media:

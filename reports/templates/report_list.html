@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Reports</h1>
+
+<!-- Search Form -->
+<form method="get" class="mb-4">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by patient name or date" class="border p-2 rounded">
+    <button type="submit" class="bg-blue-600 text-white p-2 rounded">Search</button>
+</form>
+
+<!-- Report List -->
+<div class="file-explorer space-y-4">
+    {% regroup object_list by patient as reports_by_patient %}
+    {% for patient_group in reports_by_patient %}
+        <div class="folder bg-gray-200 p-4 rounded-lg">
+            <h2 class="folder-name text-lg font-semibold">📁 {{ patient_group.grouper.name }}</h2>
+            <ul class="file-list mt-2 space-y-2">
+                {% for report in patient_group.list %}
+                    <li class="file flex justify-between items-center">
+                        <span class="file-date">📄 {{ report.date }}</span>
+                        <div>
+                            <button onclick="openModal('{{ report.id }}')" class="text-blue-600 hover:underline">Preview</button>
+                            <a href="{{ report.file.url }}" download class="text-blue-600 hover:underline ml-2">Download</a>
+                            <a href="{% url 'report_delete' pk=report.pk %}" class="text-red-600 hover:underline ml-2">Delete</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
+        <h2 class="text-xl font-bold mb-4">Report Preview</h2>
+        <div id="previewContent" class="mb-4 whitespace-pre-wrap"></div>
+        <button onclick="closeModal()" class="bg-blue-600 text-white p-2 rounded">Close</button>
+    </div>
+</div>
+
+<!-- JavaScript for Modal -->
+<script>
+    function openModal(reportId) {
+        fetch(`/get_report_preview/${reportId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('previewContent').innerText = data.preview;
+                document.getElementById('previewModal').classList.remove('hidden');
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function closeModal() {
+        document.getElementById('previewModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

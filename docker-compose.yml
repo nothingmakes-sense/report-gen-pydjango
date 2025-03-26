@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: patient_report_db
+      POSTGRES_USER: patient_report_user
+      POSTGRES_PASSWORD: 123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://patient_report_user:123@db:5432/patient_report_db
+      - AI_SERVICE_URL=http://host.docker.internal:11434
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  media:

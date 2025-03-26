@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">{{ patient.name }}</h1>
+<p>ID Number: {{ patient.id_number }}</p>
+<p>Date of Birth: {{ patient.dob }}</p>
+<p>Service: {{ patient.service }}</p>
+<p>Provider: {{ patient.provider.name }}</p>
+<p>Support Plan: {{ patient.support_plan }}</p>
+
+<h2 class="text-xl font-semibold mt-6 mb-2">Reports (File Manager)</h2>
+<ul class="list-disc pl-5">
+    {% for report in reports %}
+        <li>{{ report.date }} - <a href="{{ report.file.url }}" class="text-blue-600 hover:underline">Download</a></li>
+    {% empty %}
+        <li>No reports available.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
